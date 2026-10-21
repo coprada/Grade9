@@ -11,7 +11,14 @@
 </head>
 <body>
 <main class="phone">
-<header class="top"><h1 id="pageTitle">Variation-Based Price Simulator</h1><p id="subtitle">Build a unique group project and explore how variation models price changes.</p><div id="topMessage" class="msg" role="status" aria-live="polite"></div></header>
+<header class="top">
+<div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-bottom:12px">
+<label for="languageSelect" style="margin:0;color:white">Language / Wika</label>
+<select id="languageSelect" aria-label="Choose language" style="width:auto;min-width:125px;margin:0;padding:7px;border-radius:9px">
+<option value="en">English</option><option value="tl">Filipino / Tagalog</option>
+</select>
+</div>
+<h1 id="pageTitle">Variation-Based Price Simulator</h1><p id="subtitle">Build a unique group project and explore how variation models price changes.</p><div id="topMessage" class="msg" role="status" aria-live="polite"></div></header>
 <div class="content">
 <section class="card" id="setupCard">
 <h2>Group Project Setup</h2><p class="hint">Enter your group details and customize your project before saving. After saving, setup is locked.</p>
@@ -60,10 +67,115 @@
 
 <script>
 /* REQUIRED: paste your deployed Apps Script Web App URL ending in /exec. */
-const API_URL = 'https://script.google.com/macros/s/AKfycbxKeBVU7zX2ZSn8KG1V5sHEQj9vFTwtLg_xBhAwPMniaycukZZgj0RtrTnt5ojRM-DlaQ/exec';
+const API_URL = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
 const $ = id => document.getElementById(id);
 const STORE_KEY = 'variationPriceSimulator.cloudProject.v1';
 let activeProject = null;
+
+
+let currentLanguage = 'en';
+const translations = {
+  en: {
+    subtitle:'Build a unique group project and explore how variation models price changes.',
+    setupTitle:'Group Project Setup', setupHint:'Enter your group details and customize your project before saving. After saving, setup is locked.',
+    groupName:'Group name', section:'Section', projectTitle:'Project title (shown at the top)', projectNote:'Short project message',
+    projectNotePlaceholder:'A model exploring how supply changes may affect product prices.',
+    customize:'Customize colors', bgColor:'Screen background', primaryColor:'Header & buttons', accentColor:'Accent', cardColor:'Cards',
+    calculatorTitle:'Price Calculator', calculatorHint:'Calculator remains usable after the group project is locked.',
+    formulaSmall:'VARIATION FORMULA', variationType:'Variation type', basePrice:'Baseline price (₱)', baseSupply:'Baseline supply index', newSupply:'New supply index',
+    calculate:'Calculate price', estimated:'Estimated model price', constant:'Constant of variation', priceChange:'Price change', stepsTitle:'Step-by-step solution',
+    interpretation:'Illustrative model only, not a market forecast.', saveTitle:'Save & Lock My Project',
+    saveHint:'The setup will be saved to Google Sheets. Keep your Project Code and Access Code to reopen it later.',
+    saveButton:'Save & Lock My Project', loadTitle:'Load an existing project',
+    loadHint:'Enter the Project Code and Access Code saved when the group project was created.',
+    loadCode:'Project Code', loadAccess:'Access Code', loadButton:'Load Saved Project',
+    footer:'Educational simulation only. Real prices also depend on demand, transport costs, weather, policies, and other market conditions. A change in one product’s price is not automatically overall inflation.',
+    inverseOption:'Inverse Variation (P = k / S)', directOption:'Direct Variation (P = kS)',
+    inverseNote:'Inverse variation<br>Price varies inversely with supply.', directNote:'Direct variation<br>Price varies directly with supply.',
+    positiveNumbers:'Enter positive numbers in all fields.', onlyIllustrative:'Simplified MODEL variation model. This is an illustration, not a real-world price prediction.',
+    enterSetup:'Please enter group name, section, and project title.',
+    correctValues:'Please correct the calculator values. All numeric values must be greater than zero.',
+    saving:'Saving to Google Sheets…', saveCredentials:'Save these credentials now:', copyDetails:'Copy project details',
+    enterBoth:'Enter both the project code and access code.', loading:'Loading…'
+  },
+  tl: {
+    subtitle:'Gumawa ng natatanging proyekto ng grupo at tuklasin kung paano nagbabago ang presyo gamit ang mga modelo ng variation.',
+    setupTitle:'Pagse-set up ng Proyekto ng Grupo', setupHint:'Ilagay ang detalye ng grupo at i-customize ang proyekto bago i-save. Ila-lock ang setup pagkatapos i-save.',
+    groupName:'Pangalan ng grupo', section:'Seksyon', projectTitle:'Pamagat ng proyekto (ipapakita sa itaas)', projectNote:'Maikling mensahe ng proyekto',
+    projectNotePlaceholder:'Isang modelo na nagpapakita kung paano maaaring makaapekto sa presyo ang pagbabago ng supply.',
+    customize:'I-customize ang mga kulay', bgColor:'Kulay ng background', primaryColor:'Header at mga button', accentColor:'Pang-diin na kulay', cardColor:'Kulay ng mga card',
+    calculatorTitle:'Kuwentahan ng Presyo', calculatorHint:'Magagamit pa rin ang calculator kahit naka-lock na ang proyekto ng grupo.',
+    formulaSmall:'PORMULA NG VARIATION', variationType:'Uri ng variation', basePrice:'Batayang presyo (₱)', baseSupply:'Batayang indeks ng supply', newSupply:'Bagong indeks ng supply',
+    calculate:'Kuwentahin ang presyo', estimated:'Tinatayang presyo ayon sa modelo', constant:'Constant ng variation', priceChange:'Pagbabago ng presyo', stepsTitle:'Solusyon nang sunod-sunod',
+    interpretation:'Halimbawa lamang ito ng modelo, hindi pagtataya ng aktuwal na presyo sa merkado.', saveTitle:'I-save at I-lock ang Proyekto',
+    saveHint:'Ise-save ang setup sa Google Sheets. Itago ang Project Code at Access Code upang mabuksan muli ang proyekto.',
+    saveButton:'I-save at I-lock ang Proyekto', loadTitle:'Buksan ang na-save na proyekto',
+    loadHint:'Ilagay ang Project Code at Access Code na ginawa noong unang i-save ang proyekto ng grupo.',
+    loadCode:'Project Code', loadAccess:'Access Code', loadButton:'I-load ang Na-save na Proyekto',
+    footer:'Pang-edukasyong simulation lamang. Naaapektuhan din ang tunay na presyo ng demand, gastos sa transportasyon, panahon, mga patakaran, at iba pang kondisyon sa merkado. Ang pagbabago sa presyo ng isang produkto ay hindi awtomatikong nangangahulugan ng pangkalahatang inflation.',
+    inverseOption:'Inverse Variation (P = k / S)', directOption:'Direct Variation (P = kS)',
+    inverseNote:'Inverse variation<br>Baligtad ang ugnayan ng presyo at supply.', directNote:'Direct variation<br>Magkasabay ang direksiyon ng pagbabago ng presyo at supply.',
+    positiveNumbers:'Maglagay ng positibong numero sa lahat ng field.', onlyIllustrative:'Pinasimpleng modelo ng variation. Halimbawa lamang ito, hindi aktuwal na pagtataya ng presyo.',
+    enterSetup:'Ilagay ang pangalan ng grupo, seksyon, at pamagat ng proyekto.',
+    correctValues:'Ayusin ang mga value ng calculator. Dapat mas mataas sa zero ang lahat ng numero.',
+    saving:'Sine-save sa Google Sheets…', saveCredentials:'Itala ang mga code na ito:', copyDetails:'Kopyahin ang detalye ng proyekto',
+    enterBoth:'Ilagay ang Project Code at Access Code.', loading:'Naglo-load…'
+  }
+};
+function applyLanguage(lang) {
+  currentLanguage = translations[lang] ? lang : 'en';
+  document.documentElement.lang = currentLanguage === 'tl' ? 'fil' : 'en';
+  const t = translations[currentLanguage];
+  const put = (selector, value) => { const el = document.querySelector(selector); if (el) el.textContent = value; };
+  put('#subtitle',t.subtitle);
+  put('#setupCard h2',t.setupTitle);
+  put('#setupCard .hint',t.setupHint);
+  put('label[for="groupName"]',t.groupName);
+  put('label[for="section"]',t.section);
+  put('label[for="projectTitle"]',t.projectTitle);
+  put('label[for="projectNote"]',t.projectNote);
+  put('#projectNote',t.projectNotePlaceholder);
+  put('#setupCard h2[style]',t.customize);
+  put('label[for="bgColor"]',t.bgColor);
+  put('label[for="primaryColor"]',t.primaryColor);
+  put('label[for="accentColor"]',t.accentColor);
+  put('label[for="cardColor"]',t.cardColor);
+  put('#calculatorCard h2',t.calculatorTitle);
+  put('#calculatorCard .hint',t.calculatorHint);
+  put('.formula small',t.formulaSmall);
+  put('label[for="variationType"]',t.variationType);
+  put('label[for="basePrice"]',t.basePrice);
+  put('label[for="baseSupply"]',t.baseSupply);
+  put('label[for="newSupply"]',t.newSupply);
+  put('#calculate',t.calculate);
+  put('.eyebrow',t.estimated);
+  put('.chip:nth-child(1)',t.constant);
+  put('.chip:nth-child(2)',t.priceChange);
+  put('#calculatorCard h3',t.stepsTitle);
+  put('#saveCard h2',t.saveTitle);
+  put('#saveCard .hint',t.saveHint);
+  if (!$('saveProject').disabled) put('#saveProject',t.saveButton);
+  put('#loadCard h2',t.loadTitle);
+  put('#loadCard .hint',t.loadHint);
+  put('label[for="loadCode"]',t.loadCode);
+  put('label[for="loadAccess"]',t.loadAccess);
+  if (!$('loadProject').disabled) put('#loadProject',t.loadButton);
+  put('.foot',t.footer);
+  $('variationType').options[0].text = t.inverseOption;
+  $('variationType').options[1].text = t.directOption;
+  if (currentLanguage === 'tl') {
+    $('groupName').placeholder = 'hal. Pangkat 3';
+    $('section').placeholder = 'hal. Grade 12 STEM A';
+    $('loadCode').placeholder = '8 karakter na code';
+    $('loadAccess').placeholder = '10 karakter na access code';
+  } else {
+    $('groupName').placeholder = 'e.g. Group 3';
+    $('section').placeholder = 'e.g. Grade 12 STEM A';
+    $('loadCode').placeholder = '8-character code';
+    $('loadAccess').placeholder = '10-character access code';
+  }
+  calculate();
+}
 
 function message(id,text,bad=false){const el=$(id);el.textContent=text;el.classList.toggle('bad',bad);el.classList.add('show')}
 function clearMessage(id){const el=$(id);el.textContent='';el.classList.remove('show','bad')}
@@ -92,13 +204,13 @@ function fmt(n){return n.toLocaleString('en-PH',{maximumFractionDigits:4})}
 function money(n){return n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2})}
 function calculate(){
  const p=Number($('basePrice').value),s0=Number($('baseSupply').value),s1=Number($('newSupply').value),inv=$('variationType').value==='inverse';
- if(!['basePrice','baseSupply','newSupply'].every(id=>$(id).value.trim())||![p,s0,s1].every(Number.isFinite)||p<=0||s0<=0||s1<=0){$('priceResult').textContent='—';$('constant').textContent='—';$('percent').textContent='—';$('steps').innerHTML='<li>Enter positive numbers in all fields.</li>';return false}
+ if(!['basePrice','baseSupply','newSupply'].every(id=>$(id).value.trim())||![p,s0,s1].every(Number.isFinite)||p<=0||s0<=0||s1<=0){$('priceResult').textContent='—';$('constant').textContent='—';$('percent').textContent='—';$('steps').innerHTML='<li>'+translations[currentLanguage].positiveNumbers+'</li>';return false}
  const k=inv?p*s0:p/s0,ans=inv?k/s1:k*s1,pct=(ans/p-1)*100;
- $('formula').textContent=inv?'P = k / S':'P = kS';$('formulaNote').innerHTML=inv?'Inverse variation<br>Price varies inversely with supply.':'Direct variation<br>Price varies directly with supply.';
+ $('formula').textContent=inv?'P = k / S':'P = kS';$('formulaNote').innerHTML=inv?translations[currentLanguage].inverseNote:translations[currentLanguage].directNote;
  $('priceResult').textContent='₱'+money(ans);$('constant').textContent='k = '+fmt(k);$('percent').textContent=(pct>0?'+':'')+pct.toFixed(2)+'%';
  const lines=[inv?`Find k = P₁ × S₁ = ${fmt(p)} × ${fmt(s0)} = ${fmt(k)}.`:`Find k = P₁ ÷ S₁ = ${fmt(p)} ÷ ${fmt(s0)} = ${fmt(k)}.`,inv?`Substitute: P = k ÷ S = ${fmt(k)} ÷ ${fmt(s1)}.`:`Substitute: P = k × S = ${fmt(k)} × ${fmt(s1)}.`,`Estimated price = ₱${money(ans)}.`,`Price change from baseline = ${(pct>0?'+':'')+pct.toFixed(2)}%.`];
  $('steps').innerHTML='';lines.forEach(t=>{const li=document.createElement('li');li.textContent=t;$('steps').appendChild(li)});
- $('interpretation').textContent='Simplified '+(inv?'inverse':'direct')+' variation model. This is an illustration, not a real-world price prediction.';
+ $('interpretation').textContent=translations[currentLanguage].onlyIllustrative;
  return true;
 }
 function getSetup(){
@@ -129,29 +241,29 @@ function saveCalculatorValues(){
 $('saveProject').addEventListener('click',async()=>{
  clearMessage('saveMessage');clearMessage('credentials');
  const d=getSetup();
- if(!d.groupName||!d.section||!d.projectTitle){message('saveMessage','Please enter group name, section, and project title.',true);return}
- if(!calculate()){message('saveMessage','Please correct the calculator values. All numeric values must be greater than zero.',true);return}
- const btn=$('saveProject');btn.disabled=true;btn.textContent='Saving to Google Sheets…';
+ if(!d.groupName||!d.section||!d.projectTitle){message('saveMessage',translations[currentLanguage].enterSetup,true);return}
+ if(!calculate()){message('saveMessage',translations[currentLanguage].correctValues,true);return}
+ const btn=$('saveProject');btn.disabled=true;btn.textContent=translations[currentLanguage].saving;
  try{
    const res=await jsonp({action:'create',payload:encodeURIComponent(JSON.stringify(d))});
    const saved={...d,projectId:res.projectId,projectCode:res.projectCode,accessCode:res.accessCode,locked:true};
    setLocalCredentials(saved);applyProject(saved);
-   message('topMessage','Saved to Google Sheets and locked. SAVE THESE DETAILS — Project Code: '+res.projectCode+' | Access Code: '+res.accessCode+'. Keep them safe to reopen the project on another device.');
+   clearMessage('topMessage');
    $('credentials').innerHTML='';
-   const b1=document.createElement('b');b1.textContent='Save these credentials now:';
+   const b1=document.createElement('b');b1.textContent=translations[currentLanguage].saveCredentials;
    const p1=document.createElement('p');p1.textContent='Project Code: '+res.projectCode;
    const p2=document.createElement('p');p2.textContent='Access Code: '+res.accessCode;
    const p3=document.createElement('p');p3.textContent='Group: '+d.groupName+' · Section: '+d.section;
-   const copy=document.createElement('button');copy.className='secondary';copy.textContent='Copy project details';
+   const copy=document.createElement('button');copy.className='secondary';copy.textContent=translations[currentLanguage].copyDetails;
    copy.onclick=()=>navigator.clipboard&&navigator.clipboard.writeText('Project Code: '+res.projectCode+'\nAccess Code: '+res.accessCode+'\nGroup: '+d.groupName+'\nSection: '+d.section);
    $('credentials').append(b1,p1,p2,p3,copy);$('credentials').classList.add('show');
  }catch(err){message('saveMessage',err.message,true);btn.disabled=false;btn.textContent='Save & Lock My Project'}
 });
 $('loadProject').addEventListener('click',async()=>{
  clearMessage('loadMessage');const code=$('loadCode').value.trim().toUpperCase(),access=$('loadAccess').value.trim();
- if(!code||!access){message('loadMessage','Enter both the project code and access code.',true);return}
- const btn=$('loadProject');btn.disabled=true;btn.textContent='Loading…';
- try{const res=await jsonp({action:'load',projectCode:code,accessCode:access});const p={...res.project,accessCode:access};setLocalCredentials(p);applyProject(p);message('topMessage','Saved project loaded. Setup is locked; calculator remains usable.')}
+ if(!code||!access){message('loadMessage',translations[currentLanguage].enterBoth,true);return}
+ const btn=$('loadProject');btn.disabled=true;btn.textContent=translations[currentLanguage].loading;
+ try{const res=await jsonp({action:'load',projectCode:code,accessCode:access});const p={...res.project,accessCode:access};setLocalCredentials(p);applyProject(p);clearMessage('topMessage')}
  catch(err){message('loadMessage',err.message,true)}
  finally{btn.disabled=false;btn.textContent='Load Saved Project'}
 });
@@ -161,6 +273,8 @@ $('calculate').addEventListener('click',()=>{if(calculate())saveCalculatorValues
 $('projectTitle').addEventListener('input',()=>{$('pageTitle').textContent=$('projectTitle').value||'Variation-Based Price Simulator'});
 // Restore the current project's access on this browser, or show the load panel.
 applyColors();calculate();
+$('languageSelect').addEventListener('change', e => applyLanguage(e.target.value));
+applyLanguage('en');
 try{
  const local=JSON.parse(localStorage.getItem(STORE_KEY)||'null');
  if(local&&local.projectCode&&local.accessCode){
