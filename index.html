@@ -9,7 +9,7 @@
 *{box-sizing:border-box}body{margin:0;padding:14px 9px;background:#e8eee9;color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
 .phone{width:min(100%,430px);min-height:760px;margin:auto;overflow:hidden;border:1px solid #d4ddd7;border-radius:27px;background:var(--screen-bg);box-shadow:0 16px 45px #122d221c}
 .topbar{padding:23px 19px 21px;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-dark));position:relative;overflow:hidden}.topbar:after{content:"";position:absolute;width:150px;height:150px;border-radius:50%;right:-55px;top:-85px;background:var(--accent);opacity:.23}
-.topbar h1{font-size:23px;line-height:1.2;margin:0 0 8px;position:relative;z-index:1}.topbar p{font-size:13px;line-height:1.5;color:#ffffffdf;margin:0;position:relative;z-index:1}
+.topbar h1{font-size:23px;line-height:1.2;margin:0 0 8px;position:relative;z-index:1}.topbar p{font-size:13px;line-height:1.5;color:#ffffffdf;margin:0;position:relative;z-index:1}.save-toast{display:none;margin-top:12px;padding:10px 12px;border-radius:11px;background:#ffffffed;color:#174b36;font-size:12px;font-weight:750;line-height:1.4;position:relative;z-index:2}.save-toast.show{display:block}.save-toast.error{background:#fff0f0;color:#9f1239}
 .content{padding:14px;display:grid;gap:12px}.card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:15px;box-shadow:0 4px 12px #14322408}.card h2{font-size:16px;margin:0 0 11px}.hint{font-size:12px;color:var(--muted);line-height:1.5;margin:-3px 0 12px}
 label{display:block;font-size:12px;font-weight:750;margin:0 0 6px}input,select,button,textarea{font:inherit}input,select,textarea{width:100%;min-width:0;border:1px solid var(--border);border-radius:11px;background:#fff;padding:11px;color:var(--text);font-size:14px;outline:none}input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px #087f5b18}
 .field{margin-bottom:11px}.field:last-child{margin-bottom:0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.formula{background:color-mix(in srgb,var(--accent) 24%,white);border-radius:13px;padding:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:13px}.formula small{display:block;font-size:10px;font-weight:800;color:var(--muted);margin-bottom:4px}.formula strong{font-size:21px}.formula-note{text-align:right;font-size:11px;line-height:1.4;color:var(--muted)}
@@ -20,7 +20,7 @@ button{border:0;border-radius:11px;padding:12px;font-weight:800;cursor:pointer}.
 </head>
 <body>
 <main class="phone" id="app">
-<header class="topbar"><h1>Variation-Based Price Simulator</h1><p>Customize your simulator, explore variation, and model how changes in supply may affect price.</p></header>
+<header class="topbar"><h1 id="headerProjectTitle">Variation-Based Price Simulator</h1><p>Customize your simulator, explore variation, and model how changes in supply may affect price.</p><div id="saveToast" class="save-toast" role="status" aria-live="polite"></div></header>
 <div class="content">
 <section class="card" id="projectCard">
 <h2>1. Your Project Identity</h2>
@@ -42,7 +42,7 @@ button{border:0;border-radius:11px;padding:12px;font-weight:800;cursor:pointer}.
 </section>
 
 <section class="card" id="calculatorCard">
-<h2>3. Price Calculator</h2><p class="hint">Use positive values. This is a simplified mathematical model, not a real market forecast.</p>
+<h2>Price Calculator</h2><p class="hint">Use positive values. This is a simplified mathematical model, not a real market forecast.</p>
 <div class="formula"><div><small>VARIATION FORMULA</small><strong id="formulaText">P = k / S</strong></div><div class="formula-note" id="formulaNote">Inverse variation<br>Price varies inversely with supply.</div></div>
 <div class="field"><label for="variationType">Variation type</label><select class="editable" id="variationType"><option value="inverse">Inverse Variation (P = k / S)</option><option value="direct">Direct Variation (P = kS)</option></select></div>
 <div class="grid">
@@ -98,10 +98,12 @@ $('steps').innerHTML='';lines.forEach(t=>{const li=document.createElement('li');
 $('interpretation').textContent=Math.abs(pct)<.005?'The modelled price remains the same as the baseline price.':inverse?(pct>0?'In this simplified inverse-variation model, lower supply corresponds to a higher modelled price.':'In this simplified inverse-variation model, higher supply corresponds to a lower modelled price.'):(pct>0?'In this direct-variation model, the modelled price rises as the supply index rises.':'In this direct-variation model, the modelled price falls as the supply index falls.')+' This is a mathematical illustration, not a real-world price prediction.';
 return true;
 }
-function collect(){return {projectName:$('projectName').value.trim(),projectNote:$('projectNote').value.trim(),bgColor:$('bgColor').value,primaryColor:$('primaryColor').value,accentColor:$('accentColor').value,cardColor:$('cardColor').value,variationType:$('variationType').value,basePrice:$('basePrice').value,baseSupply:$('baseSupply').value,newSupply:$('newSupply').value,locked:true,savedAt:new Date().toISOString()}}
-function populate(d){Object.keys(defaults).forEach(k=>{if(d[k]!==undefined)$(k).value=d[k]});applyColors();calculate()}
+function showToast(message, isError=false){const toast=$('saveToast');toast.textContent=message;toast.classList.toggle('error',isError);toast.classList.add('show');}\nfunction collect(){return {projectName:$('projectName').value.trim(),projectNote:$('projectNote').value.trim(),bgColor:$('bgColor').value,primaryColor:$('primaryColor').value,accentColor:$('accentColor').value,cardColor:$('cardColor').value,variationType:$('variationType').value,basePrice:$('basePrice').value,baseSupply:$('baseSupply').value,newSupply:$('newSupply').value,locked:true,savedAt:new Date().toISOString()}}
+function populate(d){Object.keys(defaults).forEach(k=>{if(d[k]!==undefined)$(k).value=d[k]});$('headerProjectTitle').textContent=$('projectName').value.trim()||'Variation-Based Price Simulator';applyColors();calculate()}
 function lockProject(d, message='Project saved and locked on this browser.'){
+$('headerProjectTitle').textContent=$('projectName').value.trim()||'Variation-Based Price Simulator';
 locked=true;document.body.classList.add('locked');
+showToast(message || 'Project saved and locked on this browser.');
 /* Explicitly hide setup, customization, save controls, and all non-calculator content. */
 ['projectCard','customCard','saveCard'].forEach(id=>{const el=$(id);if(el)el.style.display='none'});
 const interpretationCard=$('interpretation')?.closest('.card');if(interpretationCard)interpretationCard.style.display='none';
@@ -125,21 +127,30 @@ $('resetValues').addEventListener('click',()=>{if(locked)return;['variationType'
 $('calculate').addEventListener('click',calculate);
 $('saveLock').addEventListener('click',()=>{
 if(locked)return;
-if(!$('projectName').value.trim()){ $('status').textContent='Please enter a project or team name before saving.';return; }
-if(!calculate()){ $('status').textContent='Please correct the calculator values before saving.';return; }
+if(!$('projectName').value.trim()){ $('status').textContent='Please enter a project or team name before saving.';showToast('Save failed: enter a project or team name first.',true);return; }
+if(!calculate()){ $('status').textContent='Please correct the calculator values before saving.';showToast('Save failed: check that all calculator values are greater than zero.',true);return; }
 const data=collect();
-try{localStorage.setItem(KEY,JSON.stringify(data));lockProject(data); }catch(e){$('status').textContent='Could not save in this browser. Please download a backup instead.';}
+try{
+  const serialized=JSON.stringify(data);
+  localStorage.setItem(KEY,serialized);
+  const verify=localStorage.getItem(KEY);
+  if(!verify || JSON.parse(verify).projectName!==data.projectName) throw new Error('Save verification failed');
+  lockProject(data,'Saved successfully. Your project is now locked on this browser.');
+}catch(e){
+  $('status').textContent='Could not save to this browser. Download a backup or allow site storage in your browser settings.';
+  showToast('Could not save in this browser. Allow site storage or download a backup.',true);
+}
 });
 $('exportProject').addEventListener('click',exportProject);
 $('downloadAfterLock').addEventListener('click',exportProject);
 $('printProject').addEventListener('click',printProject);
 $('printAfterLock').addEventListener('click',printProject);
-$('projectName').addEventListener('input',()=>{if(!locked)$('status').textContent='Changes are not saved yet. Save and lock when ready.'});
+$('projectName').addEventListener('input',()=>{if(!locked){$('headerProjectTitle').textContent=$('projectName').value.trim()||'Variation-Based Price Simulator';$('status').textContent='Changes are not saved yet. Save and lock when ready.';}});
 $('projectNote').addEventListener('input',()=>{if(!locked)$('status').textContent='Changes are not saved yet. Save and lock when ready.'});
 applyColors();calculate();
 try {
 const saved=localStorage.getItem(KEY);
-if(saved){const d=JSON.parse(saved);populate(d);lockProject(d,'A previously saved project was loaded and is locked.');}
+if(saved){const d=JSON.parse(saved);populate(d);lockProject(d,'Previously saved project restored and locked.');}
 } catch(e) {$('status').textContent='Could not read the previous saved project. You can still download a backup.';}
 })();
 </script>
