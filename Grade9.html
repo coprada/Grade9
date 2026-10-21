@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Variation-Based Price Simulator</title>
+<style>
+:root{--screen-bg:#f1f7f2;--primary:#087f5b;--primary-dark:#056344;--accent:#facc15;--card-bg:#fff;--text:#18312b;--muted:#64748b;--border:#dbe5df;--result-bg:#e3f8ed;--result-text:#065f46;--danger:#b91c1c;--radius:18px}
+*{box-sizing:border-box}body{margin:0;padding:14px 9px;background:#e8eee9;color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+.phone{width:min(100%,430px);min-height:760px;margin:auto;overflow:hidden;border:1px solid #d4ddd7;border-radius:27px;background:var(--screen-bg);box-shadow:0 16px 45px #122d221c}
+.topbar{padding:23px 19px 21px;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-dark));position:relative;overflow:hidden}.topbar:after{content:"";position:absolute;width:150px;height:150px;border-radius:50%;right:-55px;top:-85px;background:var(--accent);opacity:.23}
+.topbar h1{font-size:23px;line-height:1.2;margin:0 0 8px;position:relative;z-index:1}.topbar p{font-size:13px;line-height:1.5;color:#ffffffdf;margin:0;position:relative;z-index:1}
+.content{padding:14px;display:grid;gap:12px}.card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:15px;box-shadow:0 4px 12px #14322408}.card h2{font-size:16px;margin:0 0 11px}.hint{font-size:12px;color:var(--muted);line-height:1.5;margin:-3px 0 12px}
+label{display:block;font-size:12px;font-weight:750;margin:0 0 6px}input,select,button,textarea{font:inherit}input,select,textarea{width:100%;min-width:0;border:1px solid var(--border);border-radius:11px;background:#fff;padding:11px;color:var(--text);font-size:14px;outline:none}input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px #087f5b18}
+.field{margin-bottom:11px}.field:last-child{margin-bottom:0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.formula{background:color-mix(in srgb,var(--accent) 24%,white);border-radius:13px;padding:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:13px}.formula small{display:block;font-size:10px;font-weight:800;color:var(--muted);margin-bottom:4px}.formula strong{font-size:21px}.formula-note{text-align:right;font-size:11px;line-height:1.4;color:var(--muted)}
+button{border:0;border-radius:11px;padding:12px;font-weight:800;cursor:pointer}.primary{background:var(--primary);color:white;width:100%}.secondary{background:#edf3ef;color:var(--text);border:1px solid var(--border)}.btnrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.result{background:var(--result-bg);color:var(--result-text);border-radius:14px;padding:14px;margin-top:12px}.eyebrow{font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.6px}.price{font-size:29px;font-weight:900;margin:5px 0 8px;overflow-wrap:anywhere}.metas{display:grid;grid-template-columns:1fr 1fr;gap:8px}.chip{background:#ffffffb8;border-radius:9px;padding:8px;font-size:10px}.chip b{display:block;font-size:13px;margin-top:3px}.steps{padding-left:19px;font-size:12px;line-height:1.65;margin:10px 0 0}.steps li{margin-bottom:3px}.error{color:var(--danger);font-size:12px;font-weight:700;margin-top:8px}.colors{display:grid;grid-template-columns:1fr 1fr;gap:10px}.colorcontrol{display:flex;align-items:center;gap:8px}.colorcontrol input{width:42px;height:40px;padding:3px;cursor:pointer}.colorcontrol span{font-size:11px;font-weight:700}.notice{padding:11px;border-radius:11px;background:#fff7d6;color:#775b00;font-size:12px;line-height:1.5}.lock{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;padding:6px 9px;border-radius:99px;background:#e6f7ec;color:#086342}.locked #projectCard .editable,.locked #customCard .editable{opacity:.68;pointer-events:none;filter:grayscale(.25)}.locked .edit-controls{display:none}.locked #calculatorCard .edit-controls{display:block}\n/* After locking, show only the working calculator and its interpretation. */\n.locked #projectCard,.locked #customCard,.locked #saveCard{display:none!important}.locked .topbar p{display:none}.locked .content{padding-top:14px}.locked .footer{display:none}.footer{text-align:center;padding:0 18px 18px;font-size:10px;line-height:1.5;color:var(--muted)}
+@media(max-width:350px){.content{padding:10px}.card{padding:12px}.grid,.colors{grid-template-columns:1fr}.formula strong{font-size:18px}}
+</style>
+</head>
+<body>
+<main class="phone" id="app">
+<header class="topbar"><h1>Variation-Based Price Simulator</h1><p>Customize your simulator, explore variation, and model how changes in supply may affect price.</p></header>
+<div class="content">
+<section class="card" id="projectCard">
+<h2>1. Your Project Identity</h2>
+<p class="hint">Create a unique version of the simulator. You can edit it once, then lock your design and values on this browser.</p>
+<div class="field"><label for="projectName">Project name / team name</label><input class="editable" id="projectName" maxlength="60" value="EcoPrice Project" placeholder="Enter a unique project name"></div>
+<div class="field"><label for="projectNote">Short message or product being studied</label><textarea class="editable" id="projectNote" rows="2" maxlength="180" placeholder="e.g. How changes in rice supply may affect price">A sample model exploring supply and product price.</textarea></div>
+<div class="notice" id="lockNotice">Before locking, review your project name, message, colors, and calculator values. Locking is permanent for this browser unless the site data is cleared.</div>
+</section>
+
+<section class="card" id="customCard">
+<h2>2. Customize Screen Colors</h2><p class="hint">Choose your own palette. The preview updates instantly.</p>
+<div class="colors">
+<div><label for="bgColor">Screen background</label><div class="colorcontrol"><input class="editable" id="bgColor" type="color" value="#f1f7f2"><span id="bgHex">#F1F7F2</span></div></div>
+<div><label for="primaryColor">Header & buttons</label><div class="colorcontrol"><input class="editable" id="primaryColor" type="color" value="#087f5b"><span id="primaryHex">#087F5B</span></div></div>
+<div><label for="accentColor">Accent color</label><div class="colorcontrol"><input class="editable" id="accentColor" type="color" value="#facc15"><span id="accentHex">#FACC15</span></div></div>
+<div><label for="cardColor">Card background</label><div class="colorcontrol"><input class="editable" id="cardColor" type="color" value="#ffffff"><span id="cardHex">#FFFFFF</span></div></div>
+</div>
+<div class="btnrow edit-controls"><button class="secondary" id="resetColors">Reset colors</button><button class="secondary" id="resetValues">Reset values</button></div>
+</section>
+
+<section class="card" id="calculatorCard">
+<h2>3. Price Calculator</h2><p class="hint">Use positive values. This is a simplified mathematical model, not a real market forecast.</p>
+<div class="formula"><div><small>VARIATION FORMULA</small><strong id="formulaText">P = k / S</strong></div><div class="formula-note" id="formulaNote">Inverse variation<br>Price varies inversely with supply.</div></div>
+<div class="field"><label for="variationType">Variation type</label><select class="editable" id="variationType"><option value="inverse">Inverse Variation (P = k / S)</option><option value="direct">Direct Variation (P = kS)</option></select></div>
+<div class="grid">
+<div class="field"><label for="basePrice">Baseline price (₱)</label><input class="editable" id="basePrice" type="number" min=".01" step="any" value="50"></div>
+<div class="field"><label for="baseSupply">Baseline supply index</label><input class="editable" id="baseSupply" type="number" min=".01" step="any" value="100"></div>
+</div>
+<div class="field"><label for="newSupply">New supply index</label><input class="editable" id="newSupply" type="number" min=".01" step="any" value="50"></div>
+<button class="primary edit-controls" id="calculate">Calculate price</button>
+<div class="result"><div class="eyebrow">Estimated model price</div><div class="price" id="resultPrice">₱100.00</div><div class="metas"><div class="chip">Constant of variation<b id="constantValue">k = 5,000</b></div><div class="chip">Price change<b id="changeValue">+100.00%</b></div></div><h3 style="font-size:13px;margin:13px 0 5px">Step-by-step solution</h3><ol class="steps" id="steps"></ol></div>
+</section>
+
+<section class="card" id="saveCard">
+<h2>4. Save Your One-Time Edit</h2>
+<p class="hint">When you're satisfied with your unique design and simulation, save and lock it. Your saved version will load again on this browser.</p>
+<div class="notice">Important: this static version saves to this browser only. It does not verify student identity or prevent someone from clearing browser data or opening the site on another device.</div>
+<div style="margin-top:12px"><button class="primary" id="saveLock">Save & Lock My Project</button></div>
+<div class="btnrow"><button class="secondary" id="exportProject">Download project backup</button><button class="secondary" id="printProject">Print / Save as PDF</button></div>
+<p id="status" aria-live="polite" style="font-size:12px;color:var(--muted);line-height:1.5;margin:10px 0 0">Not locked yet. Review your project before saving.</p>
+<div id="lockedActions" class="btnrow" hidden><button class="secondary" id="downloadAfterLock">Download saved project</button><button class="secondary" id="printAfterLock">Print / Save as PDF</button></div>
+</section>
+<section class="card"><h2>Interpretation</h2><p id="interpretation" style="font-size:13px;line-height:1.6;margin:0">In this simplified inverse-variation model, lower supply corresponds to a higher modelled price, assuming other conditions remain unchanged.</p></section>
+</div>
+<footer class="footer">Educational simulation only. Actual prices depend on demand, transport costs, weather, policies, and other market conditions. A price change in one product is not automatically the same as overall inflation.</footer>
+</main>
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const KEY = 'variationPriceSimulator.project.v1';
+const defaults = {bgColor:'#f1f7f2',primaryColor:'#087f5b',accentColor:'#facc15',cardColor:'#ffffff',projectName:'EcoPrice Project',projectNote:'A sample model exploring supply and product price.',variationType:'inverse',basePrice:'50',baseSupply:'100',newSupply:'50'};
+const colorMap = {bgColor:'bgHex',primaryColor:'primaryHex',accentColor:'accentHex',cardColor:'cardHex'};
+let locked = false;
+function shade(hex,f){return '#'+[1,3,5].map(i=>Math.round(parseInt(hex.slice(i,i+2),16)*f).toString(16).padStart(2,'0')).join('')}
+function mix(a,b,t){return '#'+[1,3,5].map(i=>Math.round(parseInt(a.slice(i,i+2),16)*(1-t)+parseInt(b.slice(i,i+2),16)*t).toString(16).padStart(2,'0')).join('')}
+function applyColors(){
+const bg=$('bgColor').value, p=$('primaryColor').value, a=$('accentColor').value, c=$('cardColor').value;
+const r=document.documentElement.style;
+r.setProperty('--screen-bg',bg);r.setProperty('--primary',p);r.setProperty('--primary-dark',shade(p,.72));r.setProperty('--accent',a);r.setProperty('--card-bg',c);r.setProperty('--border',mix(bg,'#64748b',.22));r.setProperty('--result-bg',mix(bg,p,.18));r.setProperty('--result-text',shade(p,.62));
+Object.entries(colorMap).forEach(([id,label])=>$(label).textContent=$(id).value.toUpperCase());
+}
+function fmt(n){return n.toLocaleString('en-PH',{maximumFractionDigits:4})}
+function money(n){return n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function calculate(){
+const p=Number($('basePrice').value), s0=Number($('baseSupply').value), s1=Number($('newSupply').value), inverse=$('variationType').value==='inverse';
+if(!$('basePrice').value.trim()||!$('baseSupply').value.trim()||!$('newSupply').value.trim()||![p,s0,s1].every(Number.isFinite)||p<=0||s0<=0||s1<=0){
+$('resultPrice').textContent='—';$('constantValue').textContent='—';$('changeValue').textContent='—';$('steps').innerHTML='<li>Enter positive values in all fields to calculate.</li>';return false;
+}
+const k=inverse?p*s0:p/s0, ans=inverse?k/s1:k*s1, pct=(ans/p-1)*100;
+$('formulaText').textContent=inverse?'P = k / S':'P = kS';
+$('formulaNote').innerHTML=inverse?'Inverse variation<br>Price varies inversely with supply.':'Direct variation<br>Price varies directly with supply.';
+$('resultPrice').textContent='₱'+money(ans);$('constantValue').textContent='k = '+fmt(k);$('changeValue').textContent=(pct>0?'+':'')+pct.toFixed(2)+'%';
+const lines=[inverse?`Find k = P₁ × S₁ = ${fmt(p)} × ${fmt(s0)} = ${fmt(k)}.`:`Find k = P₁ ÷ S₁ = ${fmt(p)} ÷ ${fmt(s0)} = ${fmt(k)}.`,inverse?`Substitute: P = k ÷ S = ${fmt(k)} ÷ ${fmt(s1)}.`:`Substitute: P = k × S = ${fmt(k)} × ${fmt(s1)}.`,`Estimated price = ₱${money(ans)}.`,`Price change from baseline = ${(pct>0?'+':'')+pct.toFixed(2)}%.`];
+$('steps').innerHTML='';lines.forEach(t=>{const li=document.createElement('li');li.textContent=t;$('steps').appendChild(li)});
+$('interpretation').textContent=Math.abs(pct)<.005?'The modelled price remains the same as the baseline price.':inverse?(pct>0?'In this simplified inverse-variation model, lower supply corresponds to a higher modelled price.':'In this simplified inverse-variation model, higher supply corresponds to a lower modelled price.'):(pct>0?'In this direct-variation model, the modelled price rises as the supply index rises.':'In this direct-variation model, the modelled price falls as the supply index falls.')+' This is a mathematical illustration, not a real-world price prediction.';
+return true;
+}
+function collect(){return {projectName:$('projectName').value.trim(),projectNote:$('projectNote').value.trim(),bgColor:$('bgColor').value,primaryColor:$('primaryColor').value,accentColor:$('accentColor').value,cardColor:$('cardColor').value,variationType:$('variationType').value,basePrice:$('basePrice').value,baseSupply:$('baseSupply').value,newSupply:$('newSupply').value,locked:true,savedAt:new Date().toISOString()}}
+function populate(d){Object.keys(defaults).forEach(k=>{if(d[k]!==undefined)$(k).value=d[k]});applyColors();calculate()}
+function lockProject(d, message='Project saved and locked on this browser.'){
+locked=true;document.body.classList.add('locked');
+/* Explicitly hide setup, customization, save controls, and all non-calculator content. */
+['projectCard','customCard','saveCard'].forEach(id=>{const el=$(id);if(el)el.style.display='none'});
+const interpretationCard=$('interpretation')?.closest('.card');if(interpretationCard)interpretationCard.style.display='none';
+document.querySelectorAll('#projectCard .editable, #customCard .editable').forEach(el=>{el.disabled=true});
+document.querySelectorAll('#calculatorCard input, #calculatorCard select').forEach(el=>{el.disabled=false;el.style.pointerEvents='auto';});
+$('saveLock').disabled=true;$('saveLock').textContent='Project Locked ✓';
+$('lockNotice').textContent='This project is locked on this browser. Its saved design and calculator values are read-only.';
+$('status').textContent=message+' The calculator is now the main screen.';
+$('lockedActions').hidden=false;
+}
+function saveFile(data){
+const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+const url=URL.createObjectURL(blob), a=document.createElement('a');a.href=url;a.download=(data.projectName||'variation-project').replace(/[^a-z0-9-_]+/gi,'_')+'.json';a.click();URL.revokeObjectURL(url);
+}
+function exportProject(){saveFile(collect())}
+function printProject(){window.print()}
+Object.keys(colorMap).forEach(id=>$(id).addEventListener('input',applyColors));
+['variationType','basePrice','baseSupply','newSupply'].forEach(id=>{ $(id).addEventListener('input',calculate); $(id).addEventListener('change',calculate); });
+$('resetColors').addEventListener('click',()=>{if(locked)return;['bgColor','primaryColor','accentColor','cardColor'].forEach(k=>$(k).value=defaults[k]);applyColors()});
+$('resetValues').addEventListener('click',()=>{if(locked)return;['variationType','basePrice','baseSupply','newSupply'].forEach(k=>$(k).value=defaults[k]);calculate()});
+$('calculate').addEventListener('click',calculate);
+$('saveLock').addEventListener('click',()=>{
+if(locked)return;
+if(!$('projectName').value.trim()){ $('status').textContent='Please enter a project or team name before saving.';return; }
+if(!calculate()){ $('status').textContent='Please correct the calculator values before saving.';return; }
+const data=collect();
+try{localStorage.setItem(KEY,JSON.stringify(data));lockProject(data); }catch(e){$('status').textContent='Could not save in this browser. Please download a backup instead.';}
+});
+$('exportProject').addEventListener('click',exportProject);
+$('downloadAfterLock').addEventListener('click',exportProject);
+$('printProject').addEventListener('click',printProject);
+$('printAfterLock').addEventListener('click',printProject);
+$('projectName').addEventListener('input',()=>{if(!locked)$('status').textContent='Changes are not saved yet. Save and lock when ready.'});
+$('projectNote').addEventListener('input',()=>{if(!locked)$('status').textContent='Changes are not saved yet. Save and lock when ready.'});
+applyColors();calculate();
+try {
+const saved=localStorage.getItem(KEY);
+if(saved){const d=JSON.parse(saved);populate(d);lockProject(d,'A previously saved project was loaded and is locked.');}
+} catch(e) {$('status').textContent='Could not read the previous saved project. You can still download a backup.';}
+})();
+</script>
+</body>
+</html>
